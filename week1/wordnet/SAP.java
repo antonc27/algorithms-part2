@@ -17,6 +17,8 @@ public class SAP {
 
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
+        if (G == null) throw new IllegalArgumentException("G is null");
+
         original = new Digraph(G);
     }
 
@@ -41,6 +43,8 @@ public class SAP {
     }
 
     private Result sapResult(Iterable<Integer> v, Iterable<Integer> w) {
+        if (v == null || w == null) throw new IllegalArgumentException("Vertices argument(s) is null");
+
         BreadthFirstDirectedPaths bfsV = new BreadthFirstDirectedPaths(original, v);
         BreadthFirstDirectedPaths bfsW = new BreadthFirstDirectedPaths(original, w);
 
