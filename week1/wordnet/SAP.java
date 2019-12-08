@@ -45,6 +45,14 @@ public class SAP {
     private Result sapResult(Iterable<Integer> v, Iterable<Integer> w) {
         if (v == null || w == null) throw new IllegalArgumentException("Vertices argument(s) is null");
 
+        v.forEach(integer -> {
+            if (integer == null) throw new IllegalArgumentException("Vertices v contains null");
+        });
+
+        w.forEach(integer -> {
+            if (integer == null) throw new IllegalArgumentException("Vertices w contains null");
+        });
+
         BreadthFirstDirectedPaths bfsV = new BreadthFirstDirectedPaths(original, v);
         BreadthFirstDirectedPaths bfsW = new BreadthFirstDirectedPaths(original, w);
 
