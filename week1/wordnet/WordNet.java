@@ -14,8 +14,10 @@ import java.util.Map;
 public class WordNet {
 
     private Map<String, LinkedList<Integer>> nounsToSynsetIds;
+    private Map<Integer, String> synsetIdToSynset;
     private int synsetsCount;
-    private Digraph digraph;
+
+    private SAP sap;
 
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
@@ -25,6 +27,7 @@ public class WordNet {
 
     private void initSynsets(String synsets) {
         nounsToSynsetIds = new HashMap<>();
+        synsetIdToSynset = new HashMap<>();
         synsetsCount = 0;
 
         In in = new In(synsets);
@@ -32,7 +35,10 @@ public class WordNet {
             String line = in.readLine();
             String[] splitted = line.split(",");
             int synsetId = Integer.parseInt(splitted[0]);
-            String[] nouns = splitted[1].split(" ");
+            String synset = splitted[1];
+            synsetIdToSynset.put(synsetId, synset);
+
+            String[] nouns = synset.split(" ");
             for (String noun : nouns) {
                 LinkedList<Integer> old = nounsToSynsetIds.getOrDefault(noun, new LinkedList<>());
                 old.add(synsetId);
@@ -43,7 +49,7 @@ public class WordNet {
     }
 
     private void initHypernyms(String hypernyms) {
-        digraph = new Digraph(synsetsCount);
+        Digraph digraph = new Digraph(synsetsCount);
 
         In in = new In(hypernyms);
         while (in.hasNextLine()) {
@@ -59,6 +65,8 @@ public class WordNet {
                 }
             }
         }
+
+        sap = new SAP(digraph);
     }
 
     // returns all WordNet nouns
@@ -71,15 +79,20 @@ public class WordNet {
         return nounsToSynsetIds.containsKey(word);
     }
 
-    // distance between nounA and nounB (defined below)
+    // distance between nounA and nounB
     public int distance(String nounA, String nounB) {
-        return 0;
+        LinkedList<Integer> a = nounsToSynsetIds.get(nounA);
+        LinkedList<Integer> b = nounsToSynsetIds.get(nounB);
+        return sap.length(a, b);
     }
 
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
-    // in a shortest ancestral path (defined below)
+    // in a shortest ancestral path
     public String sap(String nounA, String nounB) {
-        return "";
+        LinkedList<Integer> a = nounsToSynsetIds.get(nounA);
+        LinkedList<Integer> b = nounsToSynsetIds.get(nounB);
+        int ancestorId = sap.ancestor(a, b);
+        return synsetIdToSynset.get(ancestorId);
     }
 
     private static void assertTrue(boolean cond, String msg) {
@@ -108,7 +121,13 @@ public class WordNet {
         WordNet wn = new WordNet("synsets.txt", "hypernyms.txt");
         assertTrue(count(wn.nouns()) == 119188, "119,188 nouns in synsets");
 
-        assertTrue(wn.digraph.V() == 82192, "82,192 vertices in hypernyms");
-        assertTrue(wn.digraph.E() == 84505, "84,505 edges in hypernyms");
+        assertTrue(wn.synsetsCount == 82192, "82,192 vertices in hypernyms");
+
+        assertTrue(wn.distance("white_marlin", "mileage") == 23, "(distance = 23) white_marlin, mileage");
+        assertTrue(wn.distance("Black_Plague", "black_marlin") == 33, "(distance = 33) Black_Plague, black_marlin");
+        assertTrue(wn.distance("American_water_spaniel", "histology") == 27, "(distance = 27) American_water_spaniel, histology");
+        assertTrue(wn.distance("Brown_Swiss", "barrel_roll") == 29, "(distance = 29) Brown_Swiss, barrel_roll");
+
+        assertTrue(wn.sap("individual", "edible_fruit").equals("physical_entity"), "The synsets individual and edible_fruit have common ancestor physical_entity");
     }
 }
