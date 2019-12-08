@@ -5,6 +5,7 @@
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.DirectedCycle;
 import edu.princeton.cs.algs4.In;
 
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public class WordNet {
 
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
+        if (synsets == null || hypernyms == null) throw new IllegalArgumentException("Null synsets or hypernyms filename(s)");
         initSynsets(synsets);
         initHypernyms(hypernyms);
     }
@@ -66,7 +68,22 @@ public class WordNet {
             }
         }
 
+        if (!isDAG(digraph) || !isSingleRooted(digraph)) throw new IllegalArgumentException("Hypernyms is not rooted DAG");
+
         sap = new SAP(digraph);
+    }
+
+    private boolean isDAG(Digraph digraph) {
+        DirectedCycle dc = new DirectedCycle(digraph);
+        return !dc.hasCycle();
+    }
+
+    private boolean isSingleRooted(Digraph digraph) {
+        int rootsCount = 0;
+        for (int v = 0; v < digraph.V(); v++) {
+            if (digraph.outdegree(v) == 0) rootsCount++;
+        }
+        return rootsCount == 1;
     }
 
     // returns all WordNet nouns
@@ -76,11 +93,13 @@ public class WordNet {
 
     // is the word a WordNet noun?
     public boolean isNoun(String word) {
+        if (word == null) throw new IllegalArgumentException("Null word");
         return nounsToSynsetIds.containsKey(word);
     }
 
     // distance between nounA and nounB
     public int distance(String nounA, String nounB) {
+        if (!isNoun(nounA) || !isNoun(nounB)) throw new IllegalArgumentException("Bad nouns");
         LinkedList<Integer> a = nounsToSynsetIds.get(nounA);
         LinkedList<Integer> b = nounsToSynsetIds.get(nounB);
         return sap.length(a, b);
@@ -89,6 +108,7 @@ public class WordNet {
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
     // in a shortest ancestral path
     public String sap(String nounA, String nounB) {
+        if (!isNoun(nounA) || !isNoun(nounB)) throw new IllegalArgumentException("Bad nouns");
         LinkedList<Integer> a = nounsToSynsetIds.get(nounA);
         LinkedList<Integer> b = nounsToSynsetIds.get(nounB);
         int ancestorId = sap.ancestor(a, b);
@@ -111,13 +131,6 @@ public class WordNet {
 
     // do unit testing of this class
     public static void main(String[] args) {
-        WordNet wn1 = new WordNet("synsets3.txt", "hypernyms3InvalidTwoRoots.txt");
-
-        assertTrue(wn1.isNoun("a"), "a is a synset");
-        assertTrue(!wn1.isNoun("d"), "d is not a synset");
-
-        assertTrue(count(wn1.nouns()) == 3, "3 nouns in synsets3");
-
         WordNet wn = new WordNet("synsets.txt", "hypernyms.txt");
         assertTrue(count(wn.nouns()) == 119188, "119,188 nouns in synsets");
 
