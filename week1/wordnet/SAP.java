@@ -10,6 +10,8 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.Collections;
+
 public class SAP {
     private Digraph original;
 
@@ -20,82 +22,64 @@ public class SAP {
 
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
-        BreadthFirstDirectedPaths bfsV = new BreadthFirstDirectedPaths(original, v);
-        BreadthFirstDirectedPaths bfsW = new BreadthFirstDirectedPaths(original, w);
-
-        int minLength = Integer.MAX_VALUE;
-        for (int u = 0; u < original.V(); u++) {
-            if (bfsV.hasPathTo(u) && bfsW.hasPathTo(u)) {
-                int lengthV = bfsV.distTo(u);
-                int lengthW = bfsW.distTo(u);
-
-                if (lengthV + lengthW < minLength) {
-                    minLength = lengthV + lengthW;
-                }
-            }
-        }
-        return (minLength == Integer.MAX_VALUE) ? -1 : minLength;
+        return length(Collections.singletonList(v), Collections.singletonList(w));
     }
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
-        BreadthFirstDirectedPaths bfsV = new BreadthFirstDirectedPaths(original, v);
-        BreadthFirstDirectedPaths bfsW = new BreadthFirstDirectedPaths(original, w);
-
-        int minLength = Integer.MAX_VALUE;
-        int ancestor = -1;
-        for (int u = 0; u < original.V(); u++) {
-            if (bfsV.hasPathTo(u) && bfsW.hasPathTo(u)) {
-                int lengthV = bfsV.distTo(u);
-                int lengthW = bfsW.distTo(u);
-
-                if (lengthV + lengthW < minLength) {
-                    minLength = lengthV + lengthW;
-                    ancestor = u;
-                }
-            }
-        }
-        return ancestor;
+        return ancestor(Collections.singletonList(v), Collections.singletonList(w));
     }
 
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
-        BreadthFirstDirectedPaths bfsV = new BreadthFirstDirectedPaths(original, v);
-        BreadthFirstDirectedPaths bfsW = new BreadthFirstDirectedPaths(original, w);
-
-        int minLength = Integer.MAX_VALUE;
-        for (int u = 0; u < original.V(); u++) {
-            if (bfsV.hasPathTo(u) && bfsW.hasPathTo(u)) {
-                int lengthV = bfsV.distTo(u);
-                int lengthW = bfsW.distTo(u);
-
-                if (lengthV + lengthW < minLength) {
-                    minLength = lengthV + lengthW;
-                }
-            }
-        }
-        return (minLength == Integer.MAX_VALUE) ? -1 : minLength;
+        return sapResult(v, w).getMinLength();
     }
 
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        return sapResult(v, w).getAncestor();
+    }
+
+    private Result sapResult(Iterable<Integer> v, Iterable<Integer> w) {
         BreadthFirstDirectedPaths bfsV = new BreadthFirstDirectedPaths(original, v);
         BreadthFirstDirectedPaths bfsW = new BreadthFirstDirectedPaths(original, w);
 
-        int minLength = Integer.MAX_VALUE;
-        int ancestor = -1;
+        Result result = new Result();
         for (int u = 0; u < original.V(); u++) {
             if (bfsV.hasPathTo(u) && bfsW.hasPathTo(u)) {
                 int lengthV = bfsV.distTo(u);
                 int lengthW = bfsW.distTo(u);
 
-                if (lengthV + lengthW < minLength) {
-                    minLength = lengthV + lengthW;
-                    ancestor = u;
+                if (result.checkMinLength(lengthV + lengthW)) {
+                    result = new Result(lengthV + lengthW, u);
                 }
             }
         }
-        return ancestor;
+        return result;
+    }
+
+    private static class Result {
+        private int minLength = Integer.MAX_VALUE;
+        private int ancestor = -1;
+
+        Result() { }
+
+        Result(int minLength, int ancestor) {
+            this.minLength = minLength;
+            this.ancestor = ancestor;
+        }
+
+        public boolean checkMinLength(int length) {
+            return length < minLength;
+        }
+
+        public int getMinLength() {
+            return (minLength == Integer.MAX_VALUE) ? -1 : minLength;
+        }
+
+        public int getAncestor() {
+            return ancestor;
+        }
     }
 
     // do unit testing of this class
