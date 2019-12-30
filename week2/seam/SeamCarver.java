@@ -149,12 +149,46 @@ public class SeamCarver {
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
-
+        transpose();
+        removeVerticalSeam(seam);
+        transpose();
     }
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
+        if (width() <= 1) throw new IllegalArgumentException("Picture size is incorrect");
+        if (seam == null) throw new IllegalArgumentException("Null seam");
+        if (!checkSeam(seam, height(), width())) throw new IllegalArgumentException("Invalid seam");
 
+        int w = width();
+        int h = height();
+        Picture tmp = new Picture(w - 1, h);
+
+        for (int row = 0; row < h; row++) {
+            int colToSkip = seam[row];
+            for (int col = 0; col < w; col++) {
+                if (col < colToSkip) {
+                    tmp.setRGB(col, row, picture.getRGB(col, row));
+                } else if (col > colToSkip) {
+                    tmp.setRGB(col - 1, row, picture.getRGB(col, row));
+                }
+            }
+        }
+
+        picture = tmp;
+    }
+
+    private boolean checkSeam(int[] seam, int length, int limit) {
+        if (seam.length != length) return false;
+        for (int i = 0; i < length; i++) {
+            if (seam[i] < 0 || seam[i] >= limit) return false;
+            if (i > 0) {
+                if (Math.abs(seam[i - 1] - seam[i]) > 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static void assertTrue(boolean cond, String msg) {
@@ -179,5 +213,9 @@ public class SeamCarver {
 
         assertTrue(Arrays.equals(sc2.findVerticalSeam(), new int[] { 3, 4, 3, 2, 1 }), "Vertical seam");
         assertTrue(Arrays.equals(sc2.findHorizontalSeam(), new int[] { 1, 2, 1, 2, 1, 0 }), "Horizontal seam");
+
+        sc2.removeVerticalSeam(sc2.findVerticalSeam());
+        assertTrue(sc2.height() == 5, "SeamCarver height after remove of vertical seam");
+        assertTrue(sc2.width() == 5, "SeamCarver width after remove of vertical seam");
     }
 }
