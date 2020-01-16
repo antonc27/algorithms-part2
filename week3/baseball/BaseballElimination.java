@@ -69,26 +69,35 @@ public class BaseballElimination {
         return Arrays.asList(teams);
     }
 
+    private void checkTeam(String team) {
+        if (team == null || !teamToIdx.containsKey(team)) throw new IllegalArgumentException("Null team");
+    }
+
     // number of wins for given team
     public int wins(String team) {
+        checkTeam(team);
         int idx = teamToIdx.get(team);
         return wins[idx];
     }
 
     // number of losses for given team
     public int losses(String team) {
+        checkTeam(team);
         int idx = teamToIdx.get(team);
         return loss[idx];
     }
 
     // number of remaining games for given team
     public int remaining(String team) {
+        checkTeam(team);
         int idx = teamToIdx.get(team);
         return left[idx];
     }
 
     // number of remaining games between team1 and team2
     public int against(String team1, String team2) {
+        checkTeam(team1);
+        checkTeam(team2);
         int i = teamToIdx.get(team1);
         int j = teamToIdx.get(team2);
         return g[i][j];
@@ -96,12 +105,15 @@ public class BaseballElimination {
 
     // is given team eliminated?
     public boolean isEliminated(String team) {
+        checkTeam(team);
         if (isTrivialElimination(team)) {
             return true;
         } else {
             FlowNetwork fn = buildFlowNetwork(team);
             int v = fn.V();
+            // StdOut.println("Before " + fn.toString());
             FordFulkerson ff = new FordFulkerson(fn, v - 2, v - 1);
+            // StdOut.println("After " + fn.toString());
             return !checkFullEdgesFromSource(fn);
         }
     }
@@ -168,10 +180,12 @@ public class BaseballElimination {
 
         // still win
         int possibleWins = wins[idx] + left[idx];
+        int teamCount = 0;
         for (int i = 0; i < n; i++) {
             if (i == idx) continue;
-            FlowEdge sw = new FlowEdge(gvCount + i, t, possibleWins - wins[i]);
+            FlowEdge sw = new FlowEdge(gvCount + teamCount, t, possibleWins - wins[i]);
             fn.addEdge(sw);
+            teamCount++;
         }
 
         return fn;
@@ -179,6 +193,7 @@ public class BaseballElimination {
 
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
+        checkTeam(team);
         return new ArrayList<>();
     }
 
