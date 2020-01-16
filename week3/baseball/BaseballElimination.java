@@ -12,7 +12,9 @@ import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BaseballElimination {
@@ -111,9 +113,7 @@ public class BaseballElimination {
         } else {
             FlowNetwork fn = buildFlowNetwork(team);
             int v = fn.V();
-            // StdOut.println("Before " + fn.toString());
             FordFulkerson ff = new FordFulkerson(fn, v - 2, v - 1);
-            // StdOut.println("After " + fn.toString());
             return !checkFullEdgesFromSource(fn);
         }
     }
@@ -196,7 +196,43 @@ public class BaseballElimination {
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
         checkTeam(team);
-        return new ArrayList<>();
+        if (!isEliminated(team)) return null;
+
+        if (isTrivialElimination(team)) {
+            return Collections.singletonList(maxScoreTeam());
+        }
+
+        List<String> coe = new ArrayList<>();
+
+        FlowNetwork fn = buildFlowNetwork(team);
+        int v = fn.V();
+        FordFulkerson ff = new FordFulkerson(fn, v - 2, v - 1);
+
+        int idx = teamToIdx.get(team);
+        int tvCount = n - 1;
+        int gvCount = tvCount * (tvCount - 1) / 2;
+
+        for (int i = 0; i < n; i++) {
+            if (i == idx) continue;
+            int iCount = i + ((i > idx) ? -1 : 0);
+            if (ff.inCut(gvCount + iCount)) {
+                coe.add(teams[i]);
+            }
+        }
+
+        return coe;
+    }
+
+    private String maxScoreTeam() {
+        String leader = "";
+        int leaderScore = Integer.MIN_VALUE;
+        for (int i = 0; i < n; i++) {
+            if (wins[i] > leaderScore) {
+                leaderScore = wins[i];
+                leader = teams[i];
+            }
+        }
+        return leader;
     }
 
     public static void main(String[] args) {
