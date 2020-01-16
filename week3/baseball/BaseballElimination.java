@@ -111,9 +111,9 @@ public class BaseballElimination {
         } else {
             FlowNetwork fn = buildFlowNetwork(team);
             int v = fn.V();
-            // StdOut.println("Before " + fn.toString());
+            StdOut.println("Before " + fn.toString());
             FordFulkerson ff = new FordFulkerson(fn, v - 2, v - 1);
-            // StdOut.println("After " + fn.toString());
+            StdOut.println("After " + fn.toString());
             return !checkFullEdgesFromSource(fn);
         }
     }
@@ -159,8 +159,10 @@ public class BaseballElimination {
         // game vertices
         int count = 0;
         // Map<Integer, Integer>
+        int iCount = 0;
         for (int i = 0; i < n; i++) {
             if (i == idx) continue;
+            int jCount = i+1;
             for (int j = i+1; j < n; j++) {
                 if (j == idx) continue;
 
@@ -169,13 +171,15 @@ public class BaseballElimination {
                 fn.addEdge(gl);
 
                 // games to teams
-                FlowEdge gti = new FlowEdge(count, gvCount + i, Double.POSITIVE_INFINITY);
+                FlowEdge gti = new FlowEdge(count, gvCount + iCount, Double.POSITIVE_INFINITY);
                 fn.addEdge(gti);
-                FlowEdge gtj = new FlowEdge(count, gvCount + j, Double.POSITIVE_INFINITY);
+                FlowEdge gtj = new FlowEdge(count, gvCount + jCount, Double.POSITIVE_INFINITY);
                 fn.addEdge(gtj);
 
                 count++;
+                jCount++;
             }
+            iCount++;
         }
 
         // still win
