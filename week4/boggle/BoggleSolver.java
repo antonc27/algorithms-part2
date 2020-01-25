@@ -79,6 +79,7 @@ public class BoggleSolver
     public int scoreOf(String word) {
         if (!isInDictionary(word)) return 0;
         int len = word.length();
+        if (len <= 2) return 0;
         if (len <= 4) return 1;
         if (len == 5) return 2;
         if (len == 6) return 3;
