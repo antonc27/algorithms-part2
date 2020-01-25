@@ -6,14 +6,14 @@
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.TrieST;
+import edu.princeton.cs.algs4.TST;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class BoggleSolver
 {
-    private TrieST<Boolean> trie = new TrieST<>();
+    private TST<Boolean> trie = new TST<>();
 
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
@@ -37,7 +37,7 @@ public class BoggleSolver
     private void searchWords(BoggleBoard board, int startRow, int startCol, Set<String> found) {
         boolean[][] seen = new boolean[board.rows()][board.cols()];
         seen[startRow][startCol] = true;
-        searchWordsRec(board, startRow, startCol, found, seen, "" + board.getLetter(startRow, startCol));
+        searchWordsRec(board, startRow, startCol, found, seen,  letterToString(board, startRow, startCol));
     }
 
     private void searchWordsRec(BoggleBoard board, int row, int col, Set<String> found, boolean[][] seen, String current) {
@@ -55,10 +55,15 @@ public class BoggleSolver
                 if (seen[row+i][col+j]) continue;
 
                 seen[row+i][col+j] = true;
-                searchWordsRec(board, row+i, col+j, found, seen, current + board.getLetter(row+i, col+j));
+                searchWordsRec(board, row+i, col+j, found, seen, current + letterToString(board, row+i, col+j));
                 seen[row+i][col+j] = false;
             }
         }
+    }
+
+    private String letterToString(BoggleBoard board, int row, int col) {
+        char c = board.getLetter(row, col);
+        return (c == 'Q') ? "QU" : "" + c;
     }
 
     private boolean isValidIndex(BoggleBoard board, int row, int col) {
