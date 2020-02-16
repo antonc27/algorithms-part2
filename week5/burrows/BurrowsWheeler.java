@@ -13,12 +13,7 @@ public class BurrowsWheeler {
     // apply Burrows-Wheeler transform,
     // reading from standard input and writing to standard output
     public static void transform() {
-        StringBuilder sb = new StringBuilder();
-        while (!BinaryStdIn.isEmpty()) {
-            char nextChar = BinaryStdIn.readChar();
-            sb.append(nextChar);
-        }
-        String input = sb.toString();
+        String input = BinaryStdIn.readString();
 
         CircularSuffixArray csa = new CircularSuffixArray(input);
         int n = csa.length();
@@ -42,13 +37,7 @@ public class BurrowsWheeler {
     // reading from standard input and writing to standard output
     public static void inverseTransform() {
         int first = BinaryStdIn.readInt();
-
-        StringBuilder sb = new StringBuilder();
-        while (!BinaryStdIn.isEmpty()) {
-            char nextChar = BinaryStdIn.readChar();
-            sb.append(nextChar);
-        }
-        String input = sb.toString();
+        String input = BinaryStdIn.readString();
 
         int[] counts = new int[257];
         for (int i = 0; i < input.length(); i++) {
